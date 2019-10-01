@@ -78,7 +78,7 @@ matrix:
         - cp ${TMP}/fleetspeak-build-*/fleetspeak-pkg/fleetspeak-client-*.msi deploy/${BUILD_TIMESTAMP}_${TRAVIS_COMMIT}/
       deploy:
         skip_cleanup: true
-        provider: gcs
+        provider: gcs-ng
         edge:
           branch: master
         access_key_id: GOOG1E7XCSBM7TMT244W5462L63RB3CGWTOBLEW52YSCHNPXVTFH7KBDSV6DA
