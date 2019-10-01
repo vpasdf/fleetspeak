@@ -76,6 +76,8 @@ matrix:
         - BUILD_TIMESTAMP=$(git show -s --format=%ci ${TRAVIS_COMMIT} | sed -e "s/[ :\\+]/_/g")
         - mkdir -p deploy/${BUILD_TIMESTAMP}_${TRAVIS_COMMIT}
         - cp ${TMP}/fleetspeak-build-*/fleetspeak-pkg/fleetspeak-client-*.msi deploy/${BUILD_TIMESTAMP}_${TRAVIS_COMMIT}/
+        - ls -l ${TMP}/fleetspeak-build-*/fleetspeak-pkg/
+        - ls -l deploy/${BUILD_TIMESTAMP}_${TRAVIS_COMMIT}/
       deploy:
         skip_cleanup: true
         provider: gcs
