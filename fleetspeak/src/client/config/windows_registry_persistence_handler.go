@@ -51,7 +51,7 @@ type WindowsRegistryPersistenceHandler struct {
 // \communicator           - Path to a text-format clpb.CommunicatorConfig, used to tweak communicator behavior.
 // \writeback              - REG_BINARY value that is used to maintain state across restarts.
 // \services\<service>     - Path to a binary format SignedClientServiceConfig. One registry value for each configured service.
-// \textservices\<service> - Path to a text-format fspb.ClientServiceConfig. One registry value for each configured service.
+// \textservices\<service> - Path to a text-format fspb.ClientServiceConfig or a text-format fspb.ClientServiceConfig inline. One registry value for each configured service.
 //
 // All of these values are optional, though Fleetspeak will not be particularly
 // useful without at least one configured service.
@@ -190,19 +190,28 @@ func (h *WindowsRegistryPersistenceHandler) ReadServices() ([]*fspb.ClientServic
 	services := make([]*fspb.ClientServiceConfig, 0)
 
 	for _, regValue := range regValues {
-		fpath, err := regutil.ReadStringValue(keyPath, regValue)
+		regData, err := regutil.ReadStringValue(keyPath, regValue)
 		if err != nil {
 			log.Errorf("Unable to read service registry value [%s -> %s], ignoring: %v", keyPath, regValue, err)
 			continue
 		}
 
-		fbytes, err := ioutil.ReadFile(fpath)
+		// Try to interpret the registry data as text proto.
+		service := &fspb.ClientServiceConfig{}
+		if err := proto.UnmarshalText(regData, service); err == nil {
+			services = append(services, service)
+			continue
+		}
+
+		// Otherwise, interpret the registry data as file path.
+		fpath := regData
+
+		fbytes, err := ioutil.ReadFile(regData)
 		if err != nil {
 			log.Errorf("Unable to read service file [%s], ignoring: %v", fpath, err)
 			continue
 		}
 
-		service := &fspb.ClientServiceConfig{}
 		if err := proto.UnmarshalText(string(fbytes), service); err != nil {
 			log.Errorf("Unable to parse service file [%s], ignoring: %v", fpath, err)
 			continue
